@@ -22,9 +22,9 @@ const addExpense = asyncHandler(async (req, res, next) => {
 
 const getExpense = asyncHandler(async (req, res, next) => {
   const expense = await Expense.find({ user: req.user._id }).sort("-createdAt");
-  console.log(req.user);
-  console.log(expense);
-  console.log(req.user._id);
+  // console.log(req.user);
+  // console.log(expense);
+  // console.log(req.user._id);
   return res
     .status(200)
     .json(new ApiResponse(200, "Expense fetched successfully", expense));
