@@ -15,7 +15,7 @@ const registerUser = asyncHandler(async function (req, res, next) {
     fullname,
     email,
     password,
-  }).select('-password');
+  });
   const token = user.generateToken();
   res.cookie("token", token, {
     httpOnly: true,
@@ -32,20 +32,43 @@ const loginUser = asyncHandler(async (req, res, next) => {
     throw new ApiError(400, "please enter email and password");
   const user = await User.findOne({ email });
   if (!user) throw new ApiError(401, "User doesn't exists");
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = await user.isPasswordCorrect(password);
   if (!isMatch) throw new ApiError(401, "password is not correct");
-  const token = jwt.sign(
-    {
-      id: user._id,
-    },
-    process.env.SECRET_TOKEN,
-    {
-      expiresIn: process.env.SECRET_TOKEN_EXPIRE,
-    }
-  );
+  const token = user.generateToken();
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  const logUser = {
+    fullname: user.fullname,
+    email: user.email,
+  };
   return res
     .status(200)
-    .json(new ApiResponse(200, "user login successfully", { user, token }));
+    .cookie("token", token, options)
+    .json(
+      new ApiResponse(200, "user login successfully", { user: logUser, token })
+    );
 });
 
-export { registerUser, loginUser };
+const logoutUser = asyncHandler(async (req, res) => {
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  res.clearCookie("token", options);
+  return res.status(200).json(new ApiResponse(200, "user logout", null));
+});
+
+const getProfile = asyncHandler(async (req, res) => {
+  console.log(req.user);
+  const user = {
+    fullname: req.user.fullname,
+    email: req.user.email,
+  };
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "successfully get user details", user));
+});
+
+export { registerUser, loginUser, logoutUser, getProfile };

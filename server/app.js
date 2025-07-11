@@ -16,7 +16,9 @@ app.use(cookieParser());
 //  * importing router
 
 import { router as authRoutes } from "./src/routes/auth.routes.js";
+import { expenseRouter } from "./src/routes/expense.route.js";
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/expense", expenseRouter)
 
 export { app };
