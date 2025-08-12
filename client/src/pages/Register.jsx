@@ -1,17 +1,19 @@
 import React from "react";
 import Input from "../component/Input";
+import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { useState } from "react";
-
 import { api } from "../api/axios";
+import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 function Register() {
+  const navigate = useNavigate();
   const [formData, setFormDate] = useState({
     fullname: "",
     email: "",
     password: "",
   });
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,20 +25,22 @@ function Register() {
     setLoading(true);
     try {
       const res = await api.post("/auth/register", formData);
-      console.log(res.data);
-      setMessage(res.data.message);
       setFormDate({
         fullname: "",
         email: "",
         password: "",
       });
+      console.log(res);
+      console.log(res.data?.message);
+      return Swal.fire({
+        icon: "success",
+        title: res.data?.message || "success",
+      }).then(() => navigate("/login"));
     } catch (error) {
       console.log("error while register", error);
-      setMessage(error?.message || "something went wrong");
-      setFormDate({
-        fullname: "",
-        email: "",
-        password: "",
+      return Swal.fire({
+        icon: "error",
+        title: "error creating user",
       });
     } finally {
       setLoading(false);
@@ -55,7 +59,6 @@ function Register() {
         <h2 className="text-3xl font-semibold mb-5 text-center text-gray-800">
           Create Account
         </h2>
-        {message && <p className="text-red-500 text-center">{message}</p>}
 
         <div className="space-y-4">
           <Input
@@ -86,7 +89,9 @@ function Register() {
           />
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={loading}
           className={`mt-6 w-full ${
@@ -116,10 +121,10 @@ function Register() {
             </svg>
           )}
           {loading ? "Processing..." : "Register"}
-        </button>
+        </motion.button>
         <div className="text-center my-5">
           <p>
-            Already have an account? <a className="text-blue-700" href="">sign in</a>
+            Already have an account? <Link to="/login">Login</Link>
           </p>
         </div>
       </motion.form>
